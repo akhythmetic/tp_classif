@@ -13,7 +13,8 @@ library(mlbench)
 library(class)  # pour knn
 library(caret)  # pour diviser les données
 library(ggplot2)
-data("PimaIndiansDiabetes", package = "mlbench")
+#data("PimaIndiansDiabetes", package = "mlbench") #ce dataset a été supprimé de la librairie
+data("SynthDiabetes2", package = "mlbench") #pour avoir le meme dataset que la correction
 ```
 
 ## A -- Le jeu de données Pima Indians Diabetes
@@ -23,13 +24,44 @@ On s'intéresse ici à un problème de classification binaire : on cherche à pr
 1)  Comprendre comment est construit le jeu de données `PimaIndiansDiabetes`. Vous pourrez notamment utiliser l'aide de `R`.
 
 ```{r}
-?PimaIndiansDiabetes
+?SynthDiabetes2 #variable à expliquer : diabetes
+summary(SynthDiabetes2) 
+```
+
+```{r}
+## missingness pattern
+colSums(is.na(SynthDiabetes2))
+```
+
+```{r}
+head(SynthDiabetes2)
+```
+
+```{r}
+dataset <- na.omit(SynthDiabetes2)
+?nrow
+## missingness pattern
+colSums(is.na(dataset))
 ```
 
 2)  Afficher un graphique bivarié avec en abscisse la variable `glucose`et en ordonnée la variable `pressure`. Utiliser un couleur différente pour chaque classe de la variable `diabetes`
 
 ```{r}
-
+?ggplot
+?scale_color_manual
+?labs
+?theme_minimal
+ggplot(dataset, aes(glucose , pressure,color = diabetes))+ # ici il y a seulement les axes
+  geom_point()+ # nuage de point
+  scale_color_manual(values = c("pos"="red", "neg"= "blue"),
+                      labels = c("Positif (Diabète)", "Négatif (Pas de diabète)"))+
+  labs(title = "Positivité au diabète selon la glycémie et la pression artérielle",
+       x="Glucose",
+       y="Pression sanguine",
+       color="Diabète")+ #ajout du titre et modification de la légende
+  #theme_minimal() # thème épuré (alternatives : theme_bw, theme_classic)
+  #theme_bw() # thème alternatif
+  theme_classic() # thème alternatif
 ```
 
 3)  On sélectionne une partie du jeu de données et on applique un algorithme des $K$ plus proches voisins avec $K =5$.
