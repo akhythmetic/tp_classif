@@ -38,7 +38,7 @@ head(SynthDiabetes2)
 ```
 
 ```{r}
-dataset <- na.omit(SynthDiabetes2)
+dataset <- na.omit(SynthDiabetes2) # enleve les lignes où y a des valeurs manquantes
 ?nrow
 ## missingness pattern
 colSums(is.na(dataset))
@@ -69,34 +69,65 @@ ggplot(dataset, aes(glucose , pressure,color = diabetes))+ # ici il y a seulemen
 Regarder ce que retourne `knn_pred`. Proposer une métrique pour évaluer si l'algorithme a bien fonctionné.
 
 ```{r,eval=FALSE}
-set.seed(10)
-Index <- createDataPartition(dataset$diabetes, p = 0.7, list = FALSE)
-data <- dataset[trainIndex,]
+set.seed(10)  # pour que le tirage de la commande suivante soit reproductible
 
-x <- data[, -9]
+# Découpage stratifié (package caret) : sélectionne 70 % (p=0.7) des lignes pour l'entraînement
+# en gardant la même proportion de diabétiques / non-diabétiques que dans le jeu complet.
+# Index = numéros des lignes d'entraînement ; le reste (-Index) servira de test.
+Index <- createDataPartition(dataset$diabetes, p = 0.7, list = FALSE)
+data <- dataset[Index,]
+
+x <- data[, -9] # la varible diabete sera dans y pas x
 y <- data$diabetes
 
 knn.pred <- knn(x,x, cl = y, k = 5)
+?knn
+knn.pred
 ```
 
 ```{r}
+head(x)
+```
 
+```{r}
+sum(knn.pred != y) # nombre d'erreur
+mean(knn.pred != y) # taux d'erreur
 ```
 
 4)  Sur le même jeu de données `data` appliquer un algorithme des KNN pour $K$ allant de 1 à 100 et afficher la valeur de la métrique pour chacune de ces valeurs
 
 ```{r}
+?plot
+v <- 1:100
+taux_erreur <- sapply(v, \(k) mean(knn(x, x, cl = y, k = k) != y))
+plot(v, 100*taux_erreur, type = "p", pch=20, col="blue", 
+     xlab="Nombre de voisins", ylab="Taux d'erreur (%)", main = "Taux d'erreur sur l'entrainement")
+```
 
+```{r}
+summary(taux_erreur)
 ```
 
 5)  On considère maintenant le reste du jeu de données laissé de côté : prédire la variable `diabetes` à l'aide du meilleur modèle identifié à la question précédente et regarder ses performances. Commenter
 
 ```{r}
+data_test <- dataset[-Index,]
+x_test <- data_test[, -9]
+y_test <- data_test$diabetes
 
+knn.pred_test <- knn(x,x_test, cl = y, k = 1)
+mean(knn.pred_test != y_test)
 ```
 
 6)  Faire le même graphique que la question 4 sauf que, pour chaque $K$, la performance du modèle est évaluée sur l'échantillon supplémentaire comme dans la question précédente.
 
 ```{r}
+taux_erreur_test <- sapply(v, \(k) mean(knn(x, x_test, cl = y, k = k) != y_test))
+plot(v, 100*taux_erreur_test, type = "p", pch=20, col="blue", 
+     xlab="Nombre de voisins", ylab="Taux d'erreur (%)", main="Taux d'erreur sur le test")
+```
 
+```{r}
+k_min <- which.min(taux_erreur_test)
+k_min
 ```
