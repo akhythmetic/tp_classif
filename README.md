@@ -8,7 +8,7 @@ I am working through them during my gap year to strengthen my skills and prepare
 
 Each file at the root of the repository is one numbered TP (`TP1`, `TP2`, ...).
 
--   TP1 : La main à la pâte avec les KNN (probleme da classification étiquetage)
+-   TP1 : Hands-on with KNN (a classification / labeling problem)
 
 ## Tools
 
