@@ -71,6 +71,7 @@ Regarder ce que retourne `knn_pred`. Proposer une métrique pour évaluer si l'a
 ```{r,eval=FALSE}
 set.seed(10)  # pour que le tirage de la commande suivante soit reproductible
 
+# Partition
 # Découpage stratifié (package caret) : sélectionne 70 % (p=0.7) des lignes pour l'entraînement
 # en gardant la même proportion de diabétiques / non-diabétiques que dans le jeu complet.
 # Index = numéros des lignes d'entraînement ; le reste (-Index) servira de test.
