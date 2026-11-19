@@ -23,17 +23,17 @@ data(iris)
 
 En vous appuyant sur les figures ci-dessous, répondez aux questions suivantes :
 
--   Est-ce un problème de régression ou de classification (supervisé) ? Pourquoi ?
+- Est-ce un problème de régression ou de classification (supervisé) ? Pourquoi ?
 
-    > Il s'agit d'un problème de classification supervisé car il y a un nombre (fini) d'etiquete à prédire.
+  > Il s'agit d'un problème de classification supervisé car il y a un nombre (fini) d'etiquete à prédire.
 
--   Combien y a-t-il de classes ?
+- Combien y a-t-il de classes ?
 
-    > Il y a trois classes pour les trois éspeces d'*Iris*.
+  > Il y a trois classes pour les trois éspeces d'*Iris*.
 
--   Quelles classes semblent plus difficiles à séparer ?
+- Quelles classes semblent plus difficiles à séparer ?
 
-    > Les classes *Versicolor* et *Virginica* semblent etre les plus difficiles
+  > Les classes *Versicolor* et *Virginica* semblent etre les plus difficiles
 
 ```{r,echo=FALSE}
 pairs(iris[1:4], main = "Données Iris -- 3 espèces", pch = 21, bg = c("blue","orange", "green3")[iris$Species], lower.panel=NULL, labels=c("Sepal.Length","Sepal.Width","Petal.Length","Petal.Width"), font.labels=0.5, cex.labels=2) 
@@ -53,110 +53,148 @@ summary(iris) #résumé plus complet des données
 
 <br />
 
--   Quelle est la taille du jeu de données ?
+- Quelle est la taille du jeu de données ?
 
-    > Il y a 150 observations.
+  > Il y a 150 observations.
 
--   Calculez avec la fonction *table* le nombre d'individus dans chaque espèce, et avec *prop.table* leurs proportions
+- Calculez avec la fonction *table* le nombre d'individus dans chaque espèce, et avec *prop.table* leurs proportions
 
-    ```{r}
-    table(iris$Species)
-    ```
+```{r}
+table(iris$Species)
+```
 
-    ```{r}
-    ?prop.table()
-    proportions(table(iris$Species))
-    ```
-
-<br />
-
--   Est-ce intéressant de standardiser les données ? Pourquoi ?
-
-    > Il est important de standardiser les données pour eviter que les variables avec une plus grande plages de valeurs ne prennent pas trop d'importances par rapport aux autres.
-
--   Créez une fonction *stdize* qui normalise un vecteur de données (avec la méthode de normalisation min-max : <https://en.wikipedia.org/wiki/Feature_scaling>) puis normalisez vos données avec cette fonction et la fonction *apply*
-
-    ```{r}
-    stdize <- function(x){
-      # Role : standardise les données d'une df numerique par la fonction min max
-      # Entrée : df numerique
-      # Sortie : df numerique
-      minimum <- min(x)
-      maximum <- max(x)
-      x_st <- (x-minimum)/(maximum-minimum)
-      return(x_st)
-    }
-    ```
-
-    ```{r}
-    # masque df pour savoir quel colonne est numerique
-    iris_num <- iris[, sapply(iris, is.numeric)] 
-    # le 2 pour lui demander d'appliquer la fonction par colonne. (2 = code colonne)
-    iris_st <- as.data.frame(apply(iris_num, 2, stdize)) 
-    iris_st$Species <- iris$Species
-    ```
-
-    ```{r}
-    dim(iris_st)
-    ```
-
-    ```{r}
-    str(iris_st)
-    ```
-
-    ```{r}
-    pairs(iris_st[1:4], main = "Données Iris_st -- 3 espèces", pch = 21, bg = c("blue","orange", "green3")[iris_st$Species], lower.panel=NULL, labels=c("Sepal.Length","Sepal.Width","Petal.Length","Petal.Width"), font.labels=0.5, cex.labels=2) 
-    legend(0.08, 0.43, as.vector(unique(iris_st$Species)),  fill=c("blue","orange", "green3"))
-    ```
+```{r}
+  ?prop.table()
+  proportions(table(iris$Species))
+```
 
 <br />
 
--   Créez un jeu d'apprentissage et de validation (le jeu de validation pourra représenter par exemple 1/3 du jeu de données) puis calculez un KNN pour K=1 avec la fonction *knn*. La fonction *knn* va entraîner le modèle sur les données d'apprentissage (dans le cas des KNN, apprendre revient "juste" à connaître les données d'apprentissage) puis, avec ce modèle entraîné, prédisez l'espèce d'iris pour les données de validation.
+- Est-ce intéressant de standardiser les données ? Pourquoi ?
 
-    ```{r}
-    set.seed(10)  # pour que le tirage de la commande suivante soit reproductible
+  > Il est important de standardiser les données pour eviter que les variables avec une plus grande plages de valeurs ne prennent pas trop d'importances par rapport aux autres.
 
-    # Partition
-    # Découpage stratifié (package caret) : sélectionne (p=2/3) des lignes pour l'entraînement
-    # en gardant la même proportion de chaque classe
-    # Index = numéros des lignes d'entraînement ; le reste (-Index) servira de test.
-    appr.ind <- createDataPartition(iris_st$Species, p = 2/3, list = FALSE)
-    n_obs <- nrow(iris_st)
-    # les indices qui ne sont pas dans l’apprentissage seront dans la validation
-    val.ind <- setdiff(1:n_obs,appr.ind)
-    table(iris_st[appr.ind,5])
-    ```
+- Créez une fonction *stdize* qui normalise un vecteur de données (avec la méthode de normalisation min-max : <https://en.wikipedia.org/wiki/Feature_scaling>) puis normalisez vos données avec cette fonction et la fonction *apply*
 
-    > Meme proportion que dans le jeu original.
+```{r}
+  stdize <- function(x){
+    # Role : standardise les données d'une df numerique par la fonction min max
+    # Entrée : df numerique
+    # Sortie : df numerique
+    minimum <- min(x)
+    maximum <- max(x)
+    x_st <- (x-minimum)/(maximum-minimum)
+    return(x_st)
+  }
+```
 
-    ```{r}
-    #réalisation de la prédiction
-    knn.pred<-knn(iris_st[appr.ind,-5],iris_st[val.ind,-5],iris_st[appr.ind,5],1)
-    sum(knn.pred != iris_st[val.ind,5])
-    ```
+```{r}
+  # masque df pour savoir quel colonne est numerique
+  iris_num <- iris[, sapply(iris, is.numeric)] 
+  # le 2 pour lui demander d'appliquer la fonction par colonne. (2 = code colonne)
+  iris_st <- as.data.frame(apply(iris_num, 2, stdize)) 
+  iris_st$Species <- iris$Species
+```
 
--   Calculez ensuite la matrice de confusion (grâce à la fonction *table* et le taux d'erreur (i.e. le nombre d'observations du jeu de données de validation mal classées) associés
+```{r}
+  dim(iris_st)
+```
 
-    ```{r}
-    # matrice de confusion
-    table(iris_st[val.ind,5],knn.pred)
-    ```
+```{r}
+  str(iris_st)
+```
+
+```{r}
+  pairs(iris_st[1:4], main = "Données Iris_st -- 3 espèces", pch = 21, bg = c("blue","orange", "green3")[iris_st$Species], lower.panel=NULL, labels=c("Sepal.Length","Sepal.Width","Petal.Length","Petal.Width"), font.labels=0.5, cex.labels=2) 
+  legend(0.08, 0.43, as.vector(unique(iris_st$Species)),  fill=c("blue","orange", "green3"))
+```
+
+<br />
+
+- Créez un jeu d'apprentissage et de validation (le jeu de validation pourra représenter par exemple 1/3 du jeu de données) puis calculez un KNN pour K=1 avec la fonction *knn*. La fonction *knn* va entraîner le modèle sur les données d'apprentissage (dans le cas des KNN, apprendre revient "juste" à connaître les données d'apprentissage) puis, avec ce modèle entraîné, prédisez l'espèce d'iris pour les données de validation.
+
+```{r}
+  set.seed(10)  # pour que le tirage de la commande suivante soit reproductible
+
+  # Partition
+  # Découpage stratifié (package caret) : sélectionne (p=2/3) des lignes pour l'entraînement
+  # en gardant la même proportion de chaque classe
+  # Index = numéros des lignes d'entraînement ; le reste (-Index) servira de test.
+  appr.ind <- createDataPartition(iris_st$Species, p = 2/3, list = FALSE)
+  n_obs <- nrow(iris_st)
+  # les indices qui ne sont pas dans l’apprentissage seront dans la validation
+  val.ind <- setdiff(1:n_obs,appr.ind)
+  table(iris_st[appr.ind,5])
+```
+
+> Meme proportion que dans le jeu original.
+
+```{r}
+  #réalisation de la prédiction
+  knn.pred<-knn(iris_st[appr.ind,-5],iris_st[val.ind,-5],iris_st[appr.ind,5],1)
+  mean(knn.pred != iris_st[val.ind,5]) # taut d'erreur
+```
+
+- Calculez ensuite la matrice de confusion (grâce à la fonction *table* et le taux d'erreur (i.e. le nombre d'observations du jeu de données de validation mal classées) associés
+
+```{r}
+  # matrice de confusion
+  table(iris_st[val.ind,5],knn.pred)
+```
 
 <br /> Parfois on donne plutôt le taux d'observations bien classées plutôt que le taux d'erreur (correspond à *l'accuracy* en anglais. Attention *l'accuracy* est donc différente de *la précision* qui est la proportion de prédictions correctes parmi les prédictions positives dans le cas d'une classification binaire). Le taux de biens classés correspond donc à *1-taux d'erreur*. Donner l'accuracy sous forme d'un pourcentage.
 
-<br />
-
--   Sans coder, quel serait le score de votre 1NN sur le jeu d'apprentissage ?
-
--   Tester pour K égal à la taille du jeu d'apprentissage. Qu'observez-vous (quelles sont les classes prédites et l'acccuracy) ?
+```{r}
+mean(knn.pred == iris_st[val.ind,5]) # Accuracy
+```
 
 <br />
 
--   Tester maintenant pour d'autres valeurs de K. Afficher ensuite, pour chaque valeur de $K$, l'accuracy obtenue et commenter.
+- Sans coder, quel serait le score de votre 1NN sur le jeu d'apprentissage ?
 
--   Calculer maintenant le score F1 (en macro-average) et afficher la valeur du score pour chaque valeur de $K$. Les deux indicateurs (F1-score et accuracy) ont-ils un comportement différent ? Vous pourrez utiliser la fonction `confusionMatrix` qui vous permettra de récupérer certains scores de performance du modèle à l'aide de la commande `cm$byClass`, (avec `cm` l'objet qui a permis de stocker le résultat de la fonction `confusionMatrix`)
+  > Le taux d’erreur du 1-NN sur le jeu d’apprentissage est de 0 % (précision de 100 %), car le plus proche voisin de chaque observation est elle-même, puisqu’elle appartient au jeu d’apprentissage.
 
--   Récupérer les valeurs de K pour lesquelles l'accuracy a été maximale
+- Tester pour K égal à la taille du jeu d'apprentissage. Qu'observez-vous (quelles sont les classes prédites et l'acccuracy) ?
+
+  #13
+
+```{r}
+n_appr <- nrow(appr.ind)
+k <- n_appr
+knn.pred.n_appr<-knn(iris_st[appr.ind,-5],iris_st[val.ind,-5],iris_st[appr.ind,5],k)
+table(iris_st[val.ind,5],knn.pred.n_appr) 
+```
+
+> #13
+>
+> Avec k = n, les k voisins sont tous les individus d’apprentissage. Les classes étant équilibrées, il n’y a pas de classe majoritaire : en cas d’égalité, `knn()` choisit une classe au hasard pour chaque individu. On obtient donc des prédictions de plusieurs classes, avec un taux d’erreur d’environ 2/3.
+
+<br />
+
+- Tester maintenant pour d'autres valeurs de K. Afficher ensuite, pour chaque valeur de $K$, l'accuracy obtenue et commenter.
+
+```{r}
+n_obs_appr <- nrow(appr.ind)
+k_all <- 1:n_obs_appr
+#ici \(k) represente une fonction de parametre k donc pas de rapport avec la variable k en memoire
+knn.val_all <- sapply(k_all, \(k) knn(iris_st[appr.ind,-5],iris_st[val.ind,-5],iris_st[appr.ind,5],k)) 
+accuracy <- colMeans(knn.val_all==iris_st[val.ind,5])
+```
+
+```{r}
+plot(k_all, 100*accuracy, type = "b", pch=16, col="dodgerblue", cex=1,
+     xlab="Nombre de voisins", ylab="Accuracy (%)", main = "Accuracy sur le jeu de validation")
+```
+
+> On observe qu'il ya du bruit lorsque k se rapproche du nombre d'observation du jeu d'entrainement ce qui randomise le classement.
+
+- Calculer maintenant le score F1 (en macro-average) et afficher la valeur du score pour chaque valeur de $K$. Les deux indicateurs (F1-score et accuracy) ont-ils un comportement différent ? Vous pourrez utiliser la fonction `confusionMatrix` qui vous permettra de récupérer certains scores de performance du modèle à l'aide de la commande `cm$byClass`, (avec `cm` l'objet qui a permis de stocker le résultat de la fonction `confusionMatrix`)
+
+```{r}
+
+```
+
+- Récupérer les valeurs de K pour lesquelles l'accuracy a été maximale
 
 <br />
 
@@ -231,9 +269,9 @@ for (i in 1:nrow(airquality)){
 
 <br />
 
--   Utilisez la fonction *train* du package *caret* pour
-    -   normaliser les données\
-    -   tester différentes valeurs de K et trouver le K optimal qui optimise le taux d'erreur moyen obtenu par validation croisée de type *M-fold* où $M=20$.
+- Utilisez la fonction *train* du package *caret* pour
+  - normaliser les données\
+  - tester différentes valeurs de K et trouver le K optimal qui optimise le taux d'erreur moyen obtenu par validation croisée de type *M-fold* où $M=20$.
 
 Des informations sur le package caret : <http://topepo.github.io/caret/index.html>
 
