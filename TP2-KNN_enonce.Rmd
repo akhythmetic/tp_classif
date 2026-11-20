@@ -191,10 +191,44 @@ plot(k_all, 100*accuracy, type = "b", pch=16, col="dodgerblue", cex=1,
 - Calculer maintenant le score F1 (en macro-average) et afficher la valeur du score pour chaque valeur de $K$. Les deux indicateurs (F1-score et accuracy) ont-ils un comportement différent ? Vous pourrez utiliser la fonction `confusionMatrix` qui vous permettra de récupérer certains scores de performance du modèle à l'aide de la commande `cm$byClass`, (avec `cm` l'objet qui a permis de stocker le résultat de la fonction `confusionMatrix`)
 
 ```{r}
+# PRISE EN MAIN DU F1 AVEC UN K FIXE
+bonne_reponses <- iris_st[val.ind, 5]
+pred.20nn <- knn.val_all[, 20]
+list_class <- levels(bonne_reponses)
+p <- factor(pred.20nn, levels = list_class) # Conversion du texte en classe
 
+tab <- table(Prediction = p, Reference = bonne_reponses) # Matrice de confusion
+
+precision <- diag(tab) / rowSums(tab) # Ligne (moins diagonale) = FP
+rappel    <- diag(tab) / colSums(tab) # Col (moins diag) = FN
+
+F1 <- 2 * precision * rappel / (precision + rappel) # Formule sur le notion
+```
+
+```{r}
+# APPLICATION A TOUS LES K
+f1_k <- sapply(k_all, function(j) {
+  # Prédictions de la colonne j, mises en facteur avec les 3 niveaux.
+  p <- factor(knn.val_all[, j], levels = levels(bonne_reponses)) 
+  cm <- confusionMatrix(p, bonne_reponses, mode = "prec_recall")
+  mean(cm$byClass[, "F1"], na.rm = TRUE)
+})
+```
+
+```{r}
+plot(k_all, f1_k, type = "p", pch = 16, col = "dodgerblue",
+     xlab = "Nombre de voisins", ylab = "F1 macro", main = "F1 vs K")
+which.max(f1_k)
 ```
 
 - Récupérer les valeurs de K pour lesquelles l'accuracy a été maximale
+
+```{r}
+k_max.acc <- which(accuracy == max(accuracy))
+k_max.acc
+```
+
+**#17**
 
 <br />
 
